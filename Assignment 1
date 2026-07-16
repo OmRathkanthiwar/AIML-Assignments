@@ -1,0 +1,53 @@
+import heapq
+
+# Graph: node -> [(neighbor, cost)]
+graph = {
+    'A': [('B', 1), ('C', 3)],
+    'B': [('D', 3), ('E', 6)],
+    'C': [('F', 5)],
+    'D': [('G', 2)],
+    'E': [('G', 1)],
+    'F': [('G', 2)],
+    'G': []
+}
+
+# Heuristic values (estimated distance to goal G)
+h = {
+    'A': 6,
+    'B': 5,
+    'C': 4,
+    'D': 2,
+    'E': 1,
+    'F': 2,
+    'G': 0
+}
+
+def aStar(start, goal):
+    openList = []
+    heapq.heappush(openList, (h[start], 0, start, [start]))
+
+    visited = set()
+
+    while openList:
+        f, g, current, path = heapq.heappop(openList)
+
+        if current == goal:
+            print("Path:", " -> ".join(path))
+            print("Total Cost:", g)
+            return
+
+        if current in visited:
+            continue
+
+        visited.add(current)
+
+        for neighbor, cost in graph[current]:
+            if neighbor not in visited:
+                newG = g + cost
+                newF = newG + h[neighbor]
+                heapq.heappush(openList, (newF, newG, neighbor, path + [neighbor]))
+
+    print("No path found.")
+
+# Driver Code
+aStar('A', 'G')
