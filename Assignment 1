@@ -1,26 +1,28 @@
 import heapq
 
-# Graph: node -> [(neighbor, cost)]
-graph = {
-    'A': [('B', 1), ('C', 3)],
-    'B': [('D', 3), ('E', 6)],
-    'C': [('F', 5)],
-    'D': [('G', 2)],
-    'E': [('G', 1)],
-    'F': [('G', 2)],
-    'G': []
-}
+# Input Graph
+graph = {}
 
-# Heuristic values (estimated distance to goal G)
-h = {
-    'A': 6,
-    'B': 5,
-    'C': 4,
-    'D': 2,
-    'E': 1,
-    'F': 2,
-    'G': 0
-}
+n = int(input("Enter number of nodes: "))
+
+for _ in range(n):
+    node = input("\nEnter node name: ")
+    m = int(input(f"Enter number of neighbors of {node}: "))
+
+    graph[node] = []
+
+    for _ in range(m):
+        neighbor = input("Neighbor: ")
+        cost = int(input("Cost: "))
+        graph[node].append((neighbor, cost))
+
+# Input Heuristic Values
+h = {}
+
+print("\nEnter heuristic values:")
+for node in graph:
+    h[node] = int(input(f"h({node}) = "))
+
 
 def aStar(start, goal):
     openList = []
@@ -32,7 +34,7 @@ def aStar(start, goal):
         f, g, current, path = heapq.heappop(openList)
 
         if current == goal:
-            print("Path:", " -> ".join(path))
+            print("\nShortest Path:", " -> ".join(path))
             print("Total Cost:", g)
             return
 
@@ -49,5 +51,8 @@ def aStar(start, goal):
 
     print("No path found.")
 
-# Driver Code
-aStar('A', 'G')
+
+start = input("\nEnter start node: ")
+goal = input("Enter goal node: ")
+
+aStar(start, goal)
