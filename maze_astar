@@ -73,62 +73,53 @@ def hint():
     start = find('P')
     goal = find('G')
 
-    openList = []
-    heapq.heappush(openList, (heuristic(start, goal), 0, start))
-
-    visited = set()
-    parent = {}
-
-    while openList:
-
-        f, g, current = heapq.heappop(openList)
-
-        if current in visited:
-            continue
-
-        visited.add(current)
-
-        if current == goal:
-            break
-
-        for nxt in getNeighbors(current):
-
-            if nxt not in visited:
-
-                parent[nxt] = current
-
-                newG = g + 1
-                newF = newG + heuristic(nxt, goal)
-
-                heapq.heappush(openList, (newF, newG, nxt))
-
-    if goal not in parent:
-        print("\nNo Path Found!")
-        input("Press Enter...")
-        return
-
-    # Build shortest path
-    path = []
-
-    cur = goal
-
-    while cur != start:
-        path.append(cur)
-        cur = parent[cur]
-
-    path.reverse()
-
     clearStars()
 
-    # Show ONLY the next move
-    if len(path) > 0:
+    print("\nCurrent Position :", start)
+    print("\nPossible Moves")
+    print("-----------------------------------")
+    print("Direction\tg\th\tf")
 
-        r, c = path[0]
+    bestF = 100000
+    bestNode = None
 
-        if maze[r][c] == ' ':
-            maze[r][c] = '*'
+    for nxt in getNeighbors(start):
 
+        g = 1
+        h = heuristic(nxt, goal)
+        f = g + h
 
+        direction = ""
+
+        if nxt[0] == start[0]-1:
+            direction = "Up"
+
+        elif nxt[0] == start[0]+1:
+            direction = "Down"
+
+        elif nxt[1] == start[1]-1:
+            direction = "Left"
+
+        elif nxt[1] == start[1]+1:
+            direction = "Right"
+
+        print(direction,"\t\t",g,"\t",h,"\t",f)
+
+        if f < bestF:
+            bestF = f
+            bestNode = nxt
+
+    if bestNode:
+
+        r,c = bestNode
+
+        if maze[r][c]==' ':
+            maze[r][c]='*'
+
+        print("\nBest Move :", bestNode)
+        print("Minimum f =",bestF)
+
+    input("\nPress Enter...")
 while True:
 
     printMaze()
