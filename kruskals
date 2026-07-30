@@ -1,0 +1,102 @@
+n = int(input("Enter number of vertices: "))
+m = int(input("Enter number of edges: "))
+
+edges = []
+
+for i in range(m):
+
+    u = input("Vertex 1: ")
+    v = input("Vertex 2: ")
+    w = int(input("Weight: "))
+
+    edges.append((w,u,v))
+
+edges.sort()
+
+vertices = []
+
+for w,u,v in edges:
+
+    if u not in vertices:
+        vertices.append(u)
+
+    if v not in vertices:
+        vertices.append(v)
+
+parent = []
+
+rank = []
+
+for i in range(len(vertices)):
+    parent.append(i)
+    rank.append(0)
+
+
+def find(x):
+
+    if parent[x] != x:
+        parent[x] = find(parent[x])
+
+    return parent[x]
+
+
+def union(x,y):
+
+    rx = find(x)
+    ry = find(y)
+
+    if rank[rx] < rank[ry]:
+        parent[rx] = ry
+
+    elif rank[rx] > rank[ry]:
+        parent[ry] = rx
+
+    else:
+        parent[ry] = rx
+        rank[rx] += 1
+
+
+cost = 0
+
+print("\nSorted Edges")
+
+for edge in edges:
+    print(edge[1],"-",edge[2],"=",edge[0])
+
+print()
+
+for w,u,v in edges:
+
+    print("----------------------------------")
+
+    print("Considering Edge :",u,"-",v,"=",w)
+
+    uIndex = vertices.index(u)
+    vIndex = vertices.index(v)
+
+    print("Parent :",parent)
+    print("Rank   :",rank)
+
+    ru = find(uIndex)
+    rv = find(vIndex)
+
+    print("Root of",u,"=",vertices[ru])
+    print("Root of",v,"=",vertices[rv])
+
+    if ru != rv:
+
+        print("Different Components")
+        print("Edge Selected")
+
+        union(uIndex,vIndex)
+
+        cost += w
+
+    else:
+
+        print("Same Component")
+        print("Edge Rejected")
+
+    print("Current MST Cost =",cost)
+
+print("\nFinal MST Cost =",cost)
