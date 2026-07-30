@@ -1,0 +1,89 @@
+import heapq
+
+graph = {}
+
+n = int(input("Enter number of vertices: "))
+
+for i in range(n):
+
+    node = input("Vertex: ")
+
+    m = int(input("Number of neighbours: "))
+
+    graph[node] = []
+
+    for j in range(m):
+
+        neighbour = input("Neighbour: ")
+        weight = int(input("Weight: "))
+
+        graph[node].append((neighbour, weight))
+
+
+start = input("\nEnter starting vertex: ")
+
+visited = set()
+visited.add(start)
+
+pq = []
+
+for neighbour, weight in graph[start]:
+    heapq.heappush(pq, (weight, start, neighbour))
+
+mstCost = 0
+
+print("\nStart Vertex :", start)
+
+while len(visited) < len(graph):
+
+    print("\n--------------------------------------")
+
+    print("Visited   :", list(visited))
+
+    unvisited = []
+
+    for v in graph:
+        if v not in visited:
+            unvisited.append(v)
+
+    print("Unvisited :", unvisited)
+
+    print("\nAvailable Edges")
+
+    temp = []
+
+    while pq:
+
+        edge = heapq.heappop(pq)
+
+        temp.append(edge)
+
+        if edge[2] not in visited:
+            print(edge[1], "->", edge[2], "=", edge[0])
+
+    for edge in temp:
+        heapq.heappush(pq, edge)
+
+    while pq:
+
+        weight, u, v = heapq.heappop(pq)
+
+        if v not in visited:
+
+            print("\nMinimum Edge Selected :", u, "->", v, "=", weight)
+
+            mstCost += weight
+
+            visited.add(v)
+
+            for neighbour, w in graph[v]:
+
+                if neighbour not in visited:
+                    heapq.heappush(pq, (w, v, neighbour))
+
+            break
+
+    print("Current MST Cost =", mstCost)
+
+print("\n==============================")
+print("Minimum Cost of MST =", mstCost)
