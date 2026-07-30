@@ -1,0 +1,33 @@
+n = int(input("Enter number of elements: "))
+
+arr = []
+
+for i in range(n):
+    x = int(input("Enter element: "))
+    arr.append(x)
+
+print("\nOriginal Array:", arr)
+
+for i in range(n - 1):
+
+    print("\nPass", i + 1)
+
+    minIndex = i
+
+    print("Assume minimum =", arr[minIndex])
+
+    for j in range(i + 1, n):
+
+        print("Comparing", arr[j], "and", arr[minIndex])
+
+        if arr[j] < arr[minIndex]:
+            minIndex = j
+            print(arr[minIndex], "is the new minimum")
+
+    print("Swapping", arr[i], "and", arr[minIndex])
+
+    arr[i], arr[minIndex] = arr[minIndex], arr[i]
+
+    print("Array after Pass", i + 1, ":", arr)
+
+print("\nSorted Array:", arr)
