@@ -104,17 +104,63 @@ Question:
 
     return response.text.strip().upper()
 
+def getDatasetSummary():
+
+    summary = f"""
+Heart Disease Dataset Statistics
+
+Number of Patients : {len(df)}
+
+Average Age : {df["age"].mean():.2f}
+
+Average Cholesterol : {df["chol"].mean():.2f}
+
+Minimum Cholesterol : {df["chol"].min()}
+
+Maximum Cholesterol : {df["chol"].max()}
+
+Average Blood Pressure : {df["trestbps"].mean():.2f}
+
+Maximum Blood Pressure : {df["trestbps"].max()}
+
+Minimum Blood Pressure : {df["trestbps"].min()}
+
+Patients with Heart Disease : {len(df[df["target"]>0])}
+
+Healthy Patients : {len(df[df["target"]==0])}
+"""
+
+    return summary
+
 
 # ---------------- MEDICAL ANSWER ----------------
 
 def medicalAnswer(question):
 
+    summary = getDatasetSummary()
+
     prompt = f"""
-You are an experienced Heart Disease Doctor.
+You are an experienced Cardiologist.
 
-Answer the following question in simple language.
+Use BOTH:
 
-Question:
+1. Your medical knowledge.
+2. The following statistics from the UCI Heart Disease dataset.
+
+Dataset Statistics
+
+{summary}
+
+Instructions
+
+1. Always use the dataset values whenever relevant.
+2. Compare the user's values with the dataset.
+3. Mention if the value is above or below the dataset average.
+4. Explain WHY using the dataset values.
+5. If the question is unrelated to the dataset, answer normally.
+
+User Question:
+
 {question}
 """
 
@@ -322,16 +368,45 @@ while True:
 
         query = generatePandasQuery(question)
 
-        answer = executeQuery(query)
+        datasetResult = executeQuery(query)
+
+        prompt = f"""
+You are a Heart Disease AI Assistant.
+
+The user asked:
+
+{question}
+
+The following result was obtained from the UCI Heart Disease Dataset:
+
+{datasetResult}
+
+Also use these dataset statistics:
+
+{getDatasetSummary()}
+
+Instructions:
+
+1. Answer the user's question using the dataset result.
+2. Explain what the result means.
+3. Mention why this value is important.
+4. If possible, compare it with the dataset average.
+5. Use your medical knowledge to explain the result.
+6. Do NOT mention Pandas or Python.
+7. Give a natural chatbot response.
+"""
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
 
         print("\nBot :")
-        print(answer)
+        print(response.text)
 
     else:
 
-        answer = medicalAnswer(question)
-
         print("\nBot :")
-        print(answer)
+        print(medicalAnswer(question))
 
     print()
