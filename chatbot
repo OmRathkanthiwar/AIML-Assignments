@@ -1,0 +1,337 @@
+from google import genai
+import pandas as pd
+
+# ---------------- GEMINI ----------------
+
+client = genai.Client(
+    api_key="AIzaSyDT7LslapmYOCuuynbB5_bRMWcRJz1dCiY"
+)
+
+chat = client.chats.create(
+    model="gemini-2.5-flash"
+)
+
+# ---------------- DATASET ----------------
+
+columns = [
+    "age",
+    "sex",
+    "cp",
+    "trestbps",
+    "chol",
+    "fbs",
+    "restecg",
+    "thalach",
+    "exang",
+    "oldpeak",
+    "slope",
+    "ca",
+    "thal",
+    "target"
+]
+
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+DATASET_PATH = os.path.join(
+    BASE_DIR,
+    "heart+disease",
+    "processed.cleveland.data"
+)
+
+df = pd.read_csv(
+    DATASET_PATH,
+    names=columns
+)
+
+df.replace("?", pd.NA, inplace=True)
+df.dropna(inplace=True)
+
+for col in df.columns:
+    df[col] = pd.to_numeric(df[col])
+
+print("--------------------------------")
+print("Dataset Loaded Successfully")
+print("Patients :", len(df))
+print("--------------------------------")
+
+# ---------------- INTENT DETECTION ----------------
+
+def detectIntent(question):
+
+    prompt = f"""
+You are an AI classifier.
+
+Your job is to classify the user's question into ONLY ONE of the following:
+
+DATASET
+MEDICAL
+
+Return ONLY ONE WORD.
+
+Examples
+
+Question: How many patients are there?
+Answer: DATASET
+
+Question: Show all patients above 60 years.
+Answer: DATASET
+
+Question: Average cholesterol of females.
+Answer: DATASET
+
+Question: Which patient has highest blood pressure?
+Answer: DATASET
+
+Question: Explain cholesterol.
+Answer: MEDICAL
+
+Question: What causes heart disease?
+Answer: MEDICAL
+
+Question: What are symptoms of heart attack?
+Answer: MEDICAL
+
+Question:
+{question}
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+
+    return response.text.strip().upper()
+
+
+# ---------------- MEDICAL ANSWER ----------------
+
+def medicalAnswer(question):
+
+    prompt = f"""
+You are an experienced Heart Disease Doctor.
+
+Answer the following question in simple language.
+
+Question:
+{question}
+"""
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+
+    return response.text
+
+# ---------------- PANDAS QUERY GENERATOR ----------------
+
+def generatePandasQuery(question):
+
+    prompt = f"""
+You are a Pandas expert.
+
+A dataframe named df already exists.
+
+Columns are:
+
+age
+sex
+cp
+trestbps
+chol
+fbs
+restecg
+thalach
+exang
+oldpeak
+slope
+ca
+thal
+target
+
+Generate ONLY ONE valid pandas expression.
+
+Rules
+
+1. Return ONLY the pandas expression.
+2. Do NOT write python code.
+3. Do NOT use print().
+4. Do NOT use markdown.
+5. Expression must use dataframe df.
+
+Examples
+
+Question:
+How many patients?
+
+Answer:
+len(df)
+
+Question:
+Average age
+
+Answer:
+df["age"].mean()
+
+Question:
+Average cholesterol
+
+Answer:
+df["chol"].mean()
+
+Question:
+Maximum cholesterol
+
+Answer:
+df["chol"].max()
+
+Question:
+Show first five rows
+
+Answer:
+df.head()
+
+Question:
+Patients older than 60
+
+Answer:
+df[df["age"] > 60]
+
+Question:
+Female patients
+
+Answer:
+df[df["sex"] == 0]
+
+Question:
+Male patients
+
+Answer:
+df[df["sex"] == 1]
+
+Question:
+Heart disease patients
+
+Answer:
+df[df["target"] > 0]
+
+Question:
+Healthy patients
+
+Answer:
+df[df["target"] == 0]
+
+Question:
+Highest blood pressure patient
+
+Answer:
+df[df["trestbps"] == df["trestbps"].max()]
+
+Question:
+
+""" + question
+
+    response = client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=prompt
+    )
+
+    query = response.text.strip()
+
+    return query
+
+# ---------------- EXECUTE QUERY ----------------
+
+def executeQuery(query):
+
+    try:
+
+        result = eval(query)
+
+        if isinstance(result, float):
+            return str(round(result,2))
+
+        if hasattr(result,"to_string"):
+            return result.to_string()
+
+        return str(result)
+
+    except Exception as e:
+
+        return "Query Error : " + str(e)
+
+print("\n===================================")
+print(" HEART DISEASE AI CHATBOT ")
+print("===================================")
+print("Type exit to quit.\n")
+
+while True:
+
+    question = input("You : ")
+
+    if question.lower() == "exit":
+        print("\nBot : Goodbye!")
+        break
+
+    intent = detectIntent(question)
+
+    print("\nIntent :", intent)
+
+    if "DATASET" in intent:
+
+        print("\nGenerating Pandas Query...")
+
+        query = generatePandasQuery(question)
+
+        print("Generated Query :")
+        print(query)
+
+        answer = executeQuery(query)
+
+        print("\nDataset Answer :")
+        print(answer)
+
+    else:
+
+        print("\nGemini Answer :")
+
+        answer = medicalAnswer(question)
+
+        print(answer)
+
+    print()
+
+print("\n===================================")
+print(" HEART DISEASE AI CHATBOT ")
+print("===================================")
+print("Type 'exit' to quit.\n")
+
+while True:
+
+    question = input("You : ")
+
+    if question.lower() == "exit":
+        print("\nBot : Goodbye!")
+        break
+
+    intent = detectIntent(question)
+
+    if "DATASET" in intent:
+
+        query = generatePandasQuery(question)
+
+        answer = executeQuery(query)
+
+        print("\nBot :")
+        print(answer)
+
+    else:
+
+        answer = medicalAnswer(question)
+
+        print("\nBot :")
+        print(answer)
+
+    print()
