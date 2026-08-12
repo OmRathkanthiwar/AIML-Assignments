@@ -1,0 +1,99 @@
+import heapq
+
+n = int(input("Enter number of vertices: "))
+
+graph = {}
+
+for i in range(n):
+
+    node = input("Enter vertex: ")
+
+    graph[node] = []
+
+    m = int(input("Enter number of connected vertices: "))
+
+    for j in range(m):
+
+        neighbor = input("Enter connected vertex: ")
+        weight = int(input("Enter edge weight: "))
+
+        graph[node].append((neighbor, weight))
+
+
+start = input("Enter starting vertex: ")
+
+distance = {}
+
+visited = set()
+
+for node in graph:
+    distance[node] = float("inf")
+
+distance[start] = 0
+
+priorityQueue = []
+
+heapq.heappush(priorityQueue, (0, start))
+
+
+while priorityQueue:
+
+    currentDistance, current = heapq.heappop(priorityQueue)
+
+    if current in visited:
+        continue
+
+    visited.add(current)
+
+    print("\nSelected Vertex :", current)
+    print("Current Distance :", currentDistance)
+
+    for neighbor, weight in graph[current]:
+
+        if neighbor not in visited:
+
+            newDistance = currentDistance + weight
+
+            print(
+                "Checking Edge:",
+                current,
+                "->",
+                neighbor,
+                "Weight:",
+                weight,
+                "New Distance:",
+                newDistance
+            )
+
+            if newDistance < distance[neighbor]:
+
+                print(
+                    "Updating distance of",
+                    neighbor,
+                    "from",
+                    distance[neighbor],
+                    "to",
+                    newDistance
+                )
+
+                distance[neighbor] = newDistance
+
+                heapq.heappush(
+                    priorityQueue,
+                    (newDistance, neighbor)
+                )
+
+
+print("\n==============================")
+print("Final Shortest Distances")
+print("==============================")
+
+for node in distance:
+
+    print(
+        start,
+        "->",
+        node,
+        "=",
+        distance[node]
+    )
