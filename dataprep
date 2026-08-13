@@ -1,10 +1,8 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
+from sklearn.model_selection import LeaveOneOut
 
-
-# --------------------------------------------------
-# LOAD DATASET
-# --------------------------------------------------
 
 df = pd.read_csv("heart.csv")
 
@@ -142,3 +140,64 @@ print("Testing Data Shape     :", testData.shape)
 print("Mean Age               :", round(meanAge, 2))
 
 print("==============================================")
+
+# # --------------------------------------------------
+# # K-FOLD CROSS VALIDATION
+# # --------------------------------------------------
+
+# print("\n==============================================")
+# print("K-FOLD CROSS VALIDATION")
+# print("==============================================")
+
+# k = 5
+
+# kf = KFold(
+#     n_splits=k,
+#     shuffle=True,
+#     random_state=42
+# )
+
+# fold = 1
+
+# for trainIndex, testIndex in kf.split(selectedData):
+
+#     trainFold = selectedData.iloc[trainIndex]
+#     testFold = selectedData.iloc[testIndex]
+
+#     print("\nFold", fold)
+
+#     print("Training Data Shape :", trainFold.shape)
+#     print("Testing Data Shape  :", testFold.shape)
+
+#     fold = fold + 1
+
+
+# # --------------------------------------------------
+# # LEAVE ONE OUT CROSS VALIDATION
+# # --------------------------------------------------
+
+# print("\n==============================================")
+# print("LEAVE ONE OUT CROSS VALIDATION")
+# print("==============================================")
+
+# loo = LeaveOneOut()
+
+# count = 1
+
+# for trainIndex, testIndex in loo.split(selectedData):
+
+#     looTrainData = selectedData.iloc[trainIndex]
+#     looTestData = selectedData.iloc[testIndex]
+
+#     # Display first 5 iterations
+#     if count <= 5:
+
+#         print("\nIteration", count)
+
+#         print("Training Data Shape :", looTrainData.shape)
+#         print("Testing Data Shape  :", looTestData.shape)
+
+#     count = count + 1
+
+
+# print("\nTotal LOO Iterations :", count - 1)
