@@ -1,0 +1,144 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+
+# --------------------------------------------------
+# LOAD DATASET
+# --------------------------------------------------
+
+df = pd.read_csv("heart.csv")
+
+
+print("==============================================")
+print("        DATA PREPARATION - HEART DATASET")
+print("==============================================")
+
+
+# --------------------------------------------------
+# a) FIND SHAPE OF DATA
+# --------------------------------------------------
+
+print("\na) Shape of Data")
+print("----------------------------------------------")
+
+print("Rows    :", df.shape[0])
+print("Columns :", df.shape[1])
+print("Shape   :", df.shape)
+
+
+# --------------------------------------------------
+# b) FIND MISSING VALUES
+# --------------------------------------------------
+
+print("\nb) Missing Values")
+print("----------------------------------------------")
+
+print(df.isnull().sum())
+
+
+# --------------------------------------------------
+# c) FIND DATA TYPE OF EACH COLUMN
+# --------------------------------------------------
+
+print("\nc) Data Type of Each Column")
+print("----------------------------------------------")
+
+print(df.dtypes)
+
+
+# --------------------------------------------------
+# d) FINDING OUT ZEROS
+# --------------------------------------------------
+
+print("\nd) Number of Zeros in Each Column")
+print("----------------------------------------------")
+
+zeroValues = (df == 0).sum()
+
+print(zeroValues)
+
+
+# --------------------------------------------------
+# e) FIND MEAN AGE OF PATIENTS
+# --------------------------------------------------
+
+print("\ne) Mean Age of Patients")
+print("----------------------------------------------")
+
+meanAge = df["age"].mean()
+
+print("Mean Age :", round(meanAge, 2))
+
+
+# --------------------------------------------------
+# f) EXTRACT REQUIRED COLUMNS
+# --------------------------------------------------
+
+print("\nf) Selected Columns")
+print("----------------------------------------------")
+
+selectedData = df[
+    ["age", "sex", "cp", "trestbps", "chol"]
+]
+
+print(selectedData)
+
+
+# --------------------------------------------------
+# DIVIDE DATASET INTO TRAINING AND TESTING
+# 75% TRAINING
+# 25% TESTING
+# --------------------------------------------------
+
+trainData, testData = train_test_split(
+    selectedData,
+    test_size=0.25,
+    random_state=42
+)
+
+
+# --------------------------------------------------
+# DISPLAY TRAINING DATA
+# --------------------------------------------------
+
+print("\n==============================================")
+print("TRAINING DATA - 75%")
+print("==============================================")
+
+print(trainData)
+
+print("\nTraining Data Shape :", trainData.shape)
+
+
+# --------------------------------------------------
+# DISPLAY TESTING DATA
+# --------------------------------------------------
+
+print("\n==============================================")
+print("TESTING DATA - 25%")
+print("==============================================")
+
+print(testData)
+
+print("\nTesting Data Shape :", testData.shape)
+
+
+# --------------------------------------------------
+# FINAL SUMMARY
+# --------------------------------------------------
+
+print("\n==============================================")
+print("             FINAL SUMMARY")
+print("==============================================")
+
+print("Original Dataset Shape :", df.shape)
+
+print("Selected Data Shape    :", selectedData.shape)
+
+print("Training Data Shape    :", trainData.shape)
+
+print("Testing Data Shape     :", testData.shape)
+
+print("Mean Age               :", round(meanAge, 2))
+
+print("==============================================")
