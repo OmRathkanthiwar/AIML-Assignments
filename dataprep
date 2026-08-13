@@ -1,10 +1,17 @@
+import os
 import pandas as pd
+
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.model_selection import LeaveOneOut
 
 
-df = pd.read_csv("heart.csv")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
+df = pd.read_csv(
+    os.path.join(BASE_DIR, "heart.csv")
+)
 
 
 print("==============================================")
@@ -141,63 +148,136 @@ print("Mean Age               :", round(meanAge, 2))
 
 print("==============================================")
 
-# # --------------------------------------------------
-# # K-FOLD CROSS VALIDATION
-# # --------------------------------------------------
+# --------------------------------------------------
+# K-FOLD CROSS VALIDATION
+# --------------------------------------------------
 
-# print("\n==============================================")
-# print("K-FOLD CROSS VALIDATION")
-# print("==============================================")
+print("\n==============================================")
+print("K-FOLD CROSS VALIDATION")
+print("==============================================")
 
-# k = 5
+k = 5
 
-# kf = KFold(
-#     n_splits=k,
-#     shuffle=True,
-#     random_state=42
-# )
+kf = KFold(
+    n_splits=k,
+    shuffle=True,
+    random_state=42
+)
 
-# fold = 1
+fold = 1
 
-# for trainIndex, testIndex in kf.split(selectedData):
+with open(
+    os.path.join(BASE_DIR, "kfold_output.txt"),
+    "w"
+) as file:
 
-#     trainFold = selectedData.iloc[trainIndex]
-#     testFold = selectedData.iloc[testIndex]
+    file.write("K-FOLD CROSS VALIDATION\n")
+    file.write("========================\n\n")
 
-#     print("\nFold", fold)
+    for trainIndex, testIndex in kf.split(selectedData):
 
-#     print("Training Data Shape :", trainFold.shape)
-#     print("Testing Data Shape  :", testFold.shape)
+        trainFold = selectedData.iloc[trainIndex]
+        testFold = selectedData.iloc[testIndex]
 
-#     fold = fold + 1
+        print("\nFold", fold)
+        print("Training Data Shape :", trainFold.shape)
+        print("Testing Data Shape  :", testFold.shape)
+
+        file.write("Fold " + str(fold) + "\n")
+        file.write("------------------------\n")
+
+        file.write(
+            "Training Data Shape : "
+            + str(trainFold.shape)
+            + "\n"
+        )
+
+        file.write(
+            "Testing Data Shape  : "
+            + str(testFold.shape)
+            + "\n\n"
+        )
+
+        file.write("Training Data:\n")
+        file.write(trainFold.to_string())
+        file.write("\n\n")
+
+        file.write("Testing Data:\n")
+        file.write(testFold.to_string())
+        file.write("\n\n")
+
+        fold = fold + 1
+
+print("\nK-Fold output saved in kfold_output.txt")
+# --------------------------------------------------
+# LEAVE ONE OUT CROSS VALIDATION
+# --------------------------------------------------
+
+print("\n==============================================")
+print("LEAVE ONE OUT CROSS VALIDATION")
+print("==============================================")
+
+loo = LeaveOneOut()
+
+count = 1
+
+with open(
+    os.path.join(BASE_DIR, "loo_output.txt"),
+    "w"
+) as file:
+
+    file.write("LEAVE ONE OUT CROSS VALIDATION\n")
+    file.write("===============================\n\n")
+
+    for trainIndex, testIndex in loo.split(selectedData):
+
+        looTrainData = selectedData.iloc[trainIndex]
+        looTestData = selectedData.iloc[testIndex]
+
+        # Display first 5 iterations on terminal
+        if count <= 5:
+
+            print("\nIteration", count)
+
+            print(
+                "Training Data Shape :",
+                looTrainData.shape
+            )
+
+            print(
+                "Testing Data Shape  :",
+                looTestData.shape
+            )
+
+        # Save every iteration in file
+        file.write(
+            "Iteration " + str(count) + "\n"
+        )
+
+        file.write(
+            "Training Data Size : "
+            + str(len(looTrainData))
+            + "\n"
+        )
+
+        file.write(
+            "Testing Data Size : "
+            + str(len(looTestData))
+            + "\n"
+        )
+
+        file.write("Testing Data:\n")
+        file.write(looTestData.to_string())
+        file.write("\n\n")
+
+        count = count + 1
 
 
-# # --------------------------------------------------
-# # LEAVE ONE OUT CROSS VALIDATION
-# # --------------------------------------------------
+file.write(
+    "Total LOO Iterations : "
+    + str(count - 1)
+)
 
-# print("\n==============================================")
-# print("LEAVE ONE OUT CROSS VALIDATION")
-# print("==============================================")
+print("\nTotal LOO Iterations :", count - 1)
 
-# loo = LeaveOneOut()
-
-# count = 1
-
-# for trainIndex, testIndex in loo.split(selectedData):
-
-#     looTrainData = selectedData.iloc[trainIndex]
-#     looTestData = selectedData.iloc[testIndex]
-
-#     # Display first 5 iterations
-#     if count <= 5:
-
-#         print("\nIteration", count)
-
-#         print("Training Data Shape :", looTrainData.shape)
-#         print("Testing Data Shape  :", looTestData.shape)
-
-#     count = count + 1
-
-
-# print("\nTotal LOO Iterations :", count - 1)
+print("\nLOO output saved in loo_output.txt")
