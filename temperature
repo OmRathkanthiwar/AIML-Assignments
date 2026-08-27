@@ -1,0 +1,96 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+import os
+
+# LOAD DATASET
+
+currentFolder = os.path.dirname(os.path.abspath(__file__))
+
+filePath = os.path.join(currentFolder, "temperatures.csv")
+
+df = pd.read_csv(filePath)
+
+print("TEMPERATURE DATASET LOADED")
+
+print(df.head())
+
+
+# INPUT FEATURE
+
+X = df[["YEAR"]]
+
+# MONTHS
+
+months = [
+    "JAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAY",
+    "JUN",
+    "JUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC"
+]
+
+
+# -----------------------------------------
+# USER INPUT
+# -----------------------------------------
+
+year = int(input("\nEnter year: "))
+
+# Keep feature name to avoid warning
+inputYear = pd.DataFrame(
+    [[year]],
+    columns=["YEAR"]
+)
+
+
+# -----------------------------------------
+# PREDICT EACH MONTH
+# -----------------------------------------
+
+print("\n======================================")
+print("PREDICTED MONTH-WISE TEMPERATURE")
+print("======================================")
+
+for month in months:
+
+    y = df[month]
+
+    model = LinearRegression()
+
+    model.fit(X, y)
+
+    prediction = model.predict(inputYear)
+
+    print(month, ":", round(prediction[0], 2))
+
+
+# -----------------------------------------
+# GRAPH - JANUARY
+# -----------------------------------------
+
+month = "JAN"
+
+y = df[month]
+
+model = LinearRegression()
+
+model.fit(X, y)
+
+plt.scatter(X, y)
+
+plt.plot(X, model.predict(X))
+
+plt.xlabel("Year")
+plt.ylabel("Temperature")
+
+plt.title("Simple Linear Regression - January Temperature")
+
+plt.show()
