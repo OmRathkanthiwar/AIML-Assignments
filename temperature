@@ -13,6 +13,13 @@ from sklearn.metrics import (
     accuracy_score
 )
 
+from sklearn.metrics import (
+    confusion_matrix,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
 
 # LOAD DATASET
 
@@ -24,6 +31,33 @@ filePath = os.path.join(
 )
 
 df = pd.read_csv(filePath)
+
+# REMOVE OUTLIERS
+
+columns = [
+    "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
+    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+    "ANNUAL"
+]
+
+for column in columns:
+
+    Q1 = df[column].quantile(0.25)
+
+    Q3 = df[column].quantile(0.75)
+
+    IQR = Q3 - Q1
+
+    lowerLimit = Q1 - 1.5 * IQR
+
+    upperLimit = Q3 + 1.5 * IQR
+
+    df = df[
+        (df[column] >= lowerLimit) &
+        (df[column] <= upperLimit)
+    ]
+
+print("\nData Shape After Removing Outliers:", df.shape)
 
 print("Data:")
 print(df.head())
@@ -310,26 +344,31 @@ logisticModel.fit(
 
 # PREDICT TEST DATA
 
-yPred = logisticModel.predict(
-    XTest
-)
+yPred = logisticModel.predict(XTest)
 
 
-# CALCULATE ACCURACY
+# CALCULATE PERFORMANCE METRICS
 
-accuracy = accuracy_score(
-    yTest,
-    yPred
-)
+accuracy = accuracy_score(yTest, yPred)
+
+precision = precision_score(yTest, yPred)
+
+recall = recall_score(yTest, yPred)
+
+f1 = f1_score(yTest, yPred)
 
 
-# DISPLAY ACCURACY
+# DISPLAY RESULTS
 
-print(
-    "\nClassification Accuracy :",
-    round(accuracy * 100, 2),
-    "%"
-)
+print("\nLogistic Regression Performance:")
+
+print("Accuracy :", round(accuracy * 100, 2), "%")
+
+print("Precision :", round(precision, 2))
+
+print("Recall :", round(recall, 2))
+
+print("F1 Score :", round(f1, 2))
 
 
 # LOGISTIC REGRESSION PREDICTION
