@@ -1,24 +1,49 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
 import os
+
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import LogisticRegression
+
+from sklearn.metrics import (
+    mean_squared_error,
+    mean_absolute_error,
+    r2_score,
+    accuracy_score
+)
+
 
 # LOAD DATASET
 
 currentFolder = os.path.dirname(os.path.abspath(__file__))
 
-filePath = os.path.join(currentFolder, "temperatures.csv")
+filePath = os.path.join(
+    currentFolder,
+    "temperatures.csv"
+)
 
 df = pd.read_csv(filePath)
 
-print("TEMPERATURE DATASET LOADED")
-
+print("Data:")
 print(df.head())
 
 
 # INPUT FEATURE
 
 X = df[["YEAR"]]
+
+
+# USER INPUT
+
+year = int(
+    input("\nEnter year for temperature prediction: ")
+)
+
+inputYear = pd.DataFrame(
+    {"YEAR": [year]}
+)
+
 
 # MONTHS
 
@@ -38,59 +63,313 @@ months = [
 ]
 
 
-# -----------------------------------------
-# USER INPUT
-# -----------------------------------------
-
-year = int(input("\nEnter year: "))
-
-# Keep feature name to avoid warning
-inputYear = pd.DataFrame(
-    [[year]],
-    columns=["YEAR"]
-)
-
-
-# -----------------------------------------
-# PREDICT EACH MONTH
-# -----------------------------------------
+# SIMPLE LINEAR REGRESSION
 
 print("\n======================================")
-print("PREDICTED MONTH-WISE TEMPERATURE")
+print("SIMPLE LINEAR REGRESSION")
 print("======================================")
+
+
+# TRAIN SEPARATE MODEL FOR EACH MONTH
 
 for month in months:
 
+    # OUTPUT
+
     y = df[month]
 
-    model = LinearRegression()
 
-    model.fit(X, y)
+    # SPLIT DATA
 
-    prediction = model.predict(inputYear)
+    XTrain, XTest, yTrain, yTest = train_test_split(
+        X,
+        y,
+        test_size=0.25,
+        random_state=42
+    )
 
-    print(month, ":", round(prediction[0], 2))
+
+    # CREATE MODEL
+
+    linearModel = LinearRegression()
 
 
-# -----------------------------------------
-# GRAPH - JANUARY
-# -----------------------------------------
+    # TRAIN MODEL
 
-month = "JAN"
+    linearModel.fit(
+        XTrain,
+        yTrain
+    )
 
-y = df[month]
 
-model = LinearRegression()
+    # PREDICT TEST DATA
 
-model.fit(X, y)
+    yPred = linearModel.predict(
+        XTest
+    )
 
-plt.scatter(X, y)
 
-plt.plot(X, model.predict(X))
+    # PREDICT USER INPUT YEAR
+
+    prediction = linearModel.predict(
+        inputYear
+    )
+
+
+    # CALCULATE MSE
+
+    mse = mean_squared_error(
+        yTest,
+        yPred
+    )
+
+
+    # CALCULATE MAE
+
+    mae = mean_absolute_error(
+        yTest,
+        yPred
+    )
+
+
+    # CALCULATE R-SQUARE
+
+    r2 = r2_score(
+        yTest,
+        yPred
+    )
+
+
+    # DISPLAY RESULTS
+
+    print("\n" + month)
+
+    print(
+        "Predicted Temperature :",
+        round(prediction[0], 2)
+    )
+
+    print(
+        "MSE :",
+        round(mse, 2)
+    )
+
+    print(
+        "MAE :",
+        round(mae, 2)
+    )
+
+    print(
+        "R-Square :",
+        round(r2, 2)
+    )
+
+
+# ANNUAL TEMPERATURE PREDICTION
+
+print("\n======================================")
+print("ANNUAL TEMPERATURE PREDICTION")
+print("======================================")
+
+
+# OUTPUT
+
+yAnnual = df["ANNUAL"]
+
+
+# SPLIT DATA
+
+XTrain, XTest, yTrain, yTest = train_test_split(
+    X,
+    yAnnual,
+    test_size=0.25,
+    random_state=42
+)
+
+
+# CREATE MODEL
+
+annualModel = LinearRegression()
+
+
+# TRAIN MODEL
+
+annualModel.fit(
+    XTrain,
+    yTrain
+)
+
+
+# PREDICT TEST DATA
+
+yPred = annualModel.predict(
+    XTest
+)
+
+
+# PREDICT USER INPUT YEAR
+
+annualPrediction = annualModel.predict(
+    inputYear
+)
+
+
+# CALCULATE METRICS
+
+mse = mean_squared_error(
+    yTest,
+    yPred
+)
+
+mae = mean_absolute_error(
+    yTest,
+    yPred
+)
+
+r2 = r2_score(
+    yTest,
+    yPred
+)
+
+
+# DISPLAY RESULTS
+
+print(
+    "\nPredicted Annual Average Temperature :",
+    round(annualPrediction[0], 2)
+)
+
+print(
+    "MSE :",
+    round(mse, 2)
+)
+
+print(
+    "MAE :",
+    round(mae, 2)
+)
+
+print(
+    "R-Square :",
+    round(r2, 2)
+)
+
+
+# LOGISTIC REGRESSION
+
+print("\n======================================")
+print("LOGISTIC REGRESSION")
+print("======================================")
+
+
+# CREATE TEMPERATURE CATEGORY
+
+meanTemperature = df["ANNUAL"].mean()
+
+df["CATEGORY"] = (
+    df["ANNUAL"] >= meanTemperature
+).astype(int)
+
+
+# CATEGORY MEANING
+
+print("\n0 = Below Average Temperature")
+
+print("1 = Above or Equal to Average Temperature")
+
+
+# INPUT AND OUTPUT
+
+XLogistic = df[["YEAR"]]
+
+yLogistic = df["CATEGORY"]
+
+
+# SPLIT DATA
+
+XTrain, XTest, yTrain, yTest = train_test_split(
+    XLogistic,
+    yLogistic,
+    test_size=0.25,
+    random_state=42
+)
+
+
+# CREATE MODEL
+
+logisticModel = LogisticRegression()
+
+
+# TRAIN MODEL
+
+logisticModel.fit(
+    XTrain,
+    yTrain
+)
+
+
+# PREDICT TEST DATA
+
+yPred = logisticModel.predict(
+    XTest
+)
+
+
+# CALCULATE ACCURACY
+
+accuracy = accuracy_score(
+    yTest,
+    yPred
+)
+
+
+# DISPLAY ACCURACY
+
+print(
+    "\nClassification Accuracy :",
+    round(accuracy * 100, 2),
+    "%"
+)
+
+
+# LOGISTIC REGRESSION PREDICTION
+
+logisticPrediction = logisticModel.predict(
+    inputYear
+)
+
+
+if logisticPrediction[0] == 1:
+
+    print(
+        "\nPrediction: Above or Equal to Average Temperature"
+    )
+
+else:
+
+    print(
+        "\nPrediction: Below Average Temperature"
+    )
+
+
+# GRAPH
+
+plt.scatter(
+    X,
+    yAnnual
+)
+
+plt.plot(
+    X,
+    annualModel.predict(X)
+)
 
 plt.xlabel("Year")
-plt.ylabel("Temperature")
 
-plt.title("Simple Linear Regression - January Temperature")
+plt.ylabel("Annual Average Temperature")
+
+plt.title(
+    "Simple Linear Regression - Temperature Prediction"
+)
 
 plt.show()
