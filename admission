@@ -1,0 +1,294 @@
+import pandas as pd
+
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
+
+from sklearn.preprocessing import StandardScaler
+
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    precision_score,
+    recall_score,
+    f1_score
+)
+
+
+# LOAD DATASET
+
+df = pd.read_csv("Admission_Predict.csv")
+
+print("Dataset:")
+print(df.head())
+
+
+# REMOVE SERIAL NUMBER
+
+df = df.drop("Serial No.", axis=1)
+
+
+# CREATE TARGET VARIABLE
+
+df["Admitted"] = (
+    df["Chance of Admit "] >= 0.5
+).astype(int)
+
+
+# REMOVE ORIGINAL TARGET
+
+X = df.drop(
+    ["Chance of Admit ", "Admitted"],
+    axis=1
+)
+
+y = df["Admitted"]
+
+
+# DISPLAY DATA
+
+print("\nInput Features:")
+print(X.columns)
+
+print("\nTarget:")
+print("0 = Not Admitted")
+print("1 = Admitted")
+
+
+# TRAIN TEST SPLIT
+
+XTrain, XTest, yTrain, yTest = train_test_split(
+    X,
+    y,
+    test_size=0.25,
+    random_state=42
+)
+
+
+print("\nTraining Data Shape:", XTrain.shape)
+print("Testing Data Shape :", XTest.shape)
+
+
+# DATA TRANSFORMATION
+
+scaler = StandardScaler()
+
+XTrainScaled = scaler.fit_transform(XTrain)
+
+XTestScaled = scaler.transform(XTest)
+
+
+# DECISION TREE
+
+print("\nDecision Tree")
+
+decisionTree = DecisionTreeClassifier(
+    random_state=42
+)
+
+decisionTree.fit(
+    XTrain,
+    yTrain
+)
+
+
+# DECISION TREE PREDICTION
+
+treePrediction = decisionTree.predict(
+    XTest
+)
+
+
+# DECISION TREE METRICS
+
+treeAccuracy = accuracy_score(
+    yTest,
+    treePrediction
+)
+
+treePrecision = precision_score(
+    yTest,
+    treePrediction,
+    zero_division=0
+)
+
+treeRecall = recall_score(
+    yTest,
+    treePrediction,
+    zero_division=0
+)
+
+treeF1 = f1_score(
+    yTest,
+    treePrediction,
+    zero_division=0
+)
+
+treeMatrix = confusion_matrix(
+    yTest,
+    treePrediction
+)
+
+
+# DISPLAY DECISION TREE RESULTS
+
+print("Accuracy :", round(treeAccuracy * 100, 2), "%")
+
+print("Precision :", round(treePrecision, 2))
+
+print("Recall :", round(treeRecall, 2))
+
+print("F1 Score :", round(treeF1, 2))
+
+print("Confusion Matrix:")
+
+print(treeMatrix)
+
+
+# SUPPORT VECTOR MACHINE
+
+print("\nSupport Vector Machine")
+
+svmModel = SVC(
+    kernel="linear"
+)
+
+
+# TRAIN SVM
+
+svmModel.fit(
+    XTrainScaled,
+    yTrain
+)
+
+
+# SVM PREDICTION
+
+svmPrediction = svmModel.predict(
+    XTestScaled
+)
+
+
+# SVM METRICS
+
+svmAccuracy = accuracy_score(
+    yTest,
+    svmPrediction
+)
+
+svmPrecision = precision_score(
+    yTest,
+    svmPrediction,
+    zero_division=0
+)
+
+svmRecall = recall_score(
+    yTest,
+    svmPrediction,
+    zero_division=0
+)
+
+svmF1 = f1_score(
+    yTest,
+    svmPrediction,
+    zero_division=0
+)
+
+svmMatrix = confusion_matrix(
+    yTest,
+    svmPrediction
+)
+
+
+# DISPLAY SVM RESULTS
+
+print("Accuracy :", round(svmAccuracy * 100, 2), "%")
+
+print("Precision :", round(svmPrecision, 2))
+
+print("Recall :", round(svmRecall, 2))
+
+print("F1 Score :", round(svmF1, 2))
+
+print("Confusion Matrix:")
+
+print(svmMatrix)
+
+
+# USER INPUT
+
+print("\nEnter Student Details")
+
+gre = float(input("GRE Score: "))
+
+toefl = float(input("TOEFL Score: "))
+
+universityRating = float(
+    input("University Rating: ")
+)
+
+sop = float(
+    input("SOP: ")
+)
+
+lor = float(
+    input("LOR: ")
+)
+
+cgpa = float(
+    input("CGPA: ")
+)
+
+research = int(
+    input("Research (0 or 1): ")
+)
+
+
+# CREATE INPUT DATA
+
+studentData = pd.DataFrame(
+    [[
+        gre,
+        toefl,
+        universityRating,
+        sop,
+        lor,
+        cgpa,
+        research
+    ]],
+    columns=X.columns
+)
+
+
+# DECISION TREE PREDICTION
+
+treeResult = decisionTree.predict(
+    studentData
+)
+
+
+# SVM PREDICTION
+
+studentDataScaled = scaler.transform(
+    studentData
+)
+
+svmResult = svmModel.predict(
+    studentDataScaled
+)
+
+
+# DISPLAY PREDICTIONS
+
+print("\nPrediction")
+
+if treeResult[0] == 1:
+    print("Decision Tree : Admitted")
+else:
+    print("Decision Tree : Not Admitted")
+
+
+if svmResult[0] == 1:
+    print("SVM : Admitted")
+else:
+    print("SVM : Not Admitted")
