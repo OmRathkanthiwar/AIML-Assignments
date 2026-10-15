@@ -1,0 +1,94 @@
+import os
+import pandas as pd
+import matplotlib.pyplot as plt
+from apyori import apriori
+
+# LOAD DATASET
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+df = pd.read_csv(
+    os.path.join(BASE_DIR, "Market_Basket_Optimisation.csv"),
+    header=None
+)
+
+print(df.head())
+
+# DATA PREPROCESSING
+transactions = []
+
+for i in range(len(df)):
+    items = []
+    for j in range(len(df.columns)):
+        if pd.notna(df.iloc[i, j]):
+            items.append(str(df.iloc[i, j]).strip())
+    transactions.append(items)
+
+print("Total Transactions:", len(transactions))
+
+# TRAIN APRIORI ALGORITHM
+rules = apriori(
+    transactions=transactions,
+    min_support=0.003,
+    min_confidence=0.2,
+    min_lift=3,
+    min_length=2
+)
+
+rules = list(rules)
+
+# DISPLAY ASSOCIATION RULES
+print("Total Rules:", len(rules))
+
+ruleData = []
+
+for rule in rules:
+    items = list(rule.items)
+    support = rule.support
+
+    for result in rule.ordered_statistics:
+        if result.confidence >= 0.2 and result.lift >= 3:
+            ruleData.append([
+                ", ".join(result.items_base),
+                ", ".join(result.items_add),
+                support,
+                result.confidence,
+                result.lift
+            ])
+
+result = pd.DataFrame(
+    ruleData,
+    columns=["Antecedent", "Consequent", "Support", "Confidence", "Lift"]
+)
+
+print(result)
+
+# INCREASE MINIMUM CONFIDENCE
+rules2 = apriori(
+    transactions=transactions,
+    min_support=0.003,
+    min_confidence=0.4,
+    min_lift=3,
+    min_length=2
+)
+
+rules2 = list(rules2)
+print("\nRules with minimum confidence 0.4:")
+
+for rule in rules2:
+    for item in rule.ordered_statistics:
+        if item.confidence >= 0.4 and item.lift >= 3:
+            print(
+                list(item.items_base), "=>", list(item.items_add),
+                "Support:", round(rule.support, 3),
+                "Confidence:", round(item.confidence, 3),
+                "Lift:", round(item.lift, 3)
+            )
+
+# VISUALIZE ASSOCIATION RULES
+if not result.empty:
+    plt.scatter(result["Support"], result["Confidence"])
+    plt.xlabel("Support")
+    plt.ylabel("Confidence")
+    plt.title("Association Rules using Apriori")
+    plt.show()
+else:
+    print("No rules found. Try lowering min_lift or min_support.")
